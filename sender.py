@@ -12,7 +12,7 @@ receiver_port_udp = 7778
 s_tcp.connect((receiver_ip, receiver_port_tcp))
 s_udp.connect((receiver_ip, receiver_port_udp))
 for i in range(num_packets):
-    s_tcp.sendall(i)
-    s_udp.sendall(i)
+    s_tcp.sendall(str(i).encode('ascii'))
+    s_udp.sendall(str(i).encode('ascii'))
 
 print('done')
