@@ -3,6 +3,7 @@ import time
 
 num_packets = 20
 packet_size = 2048
+seq_num_max_len = 8
 
 s_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -15,7 +16,10 @@ s_tcp.connect((receiver_ip, receiver_port_tcp))
 s_udp.connect((receiver_ip, receiver_port_udp))
 for i in range(num_packets):
     cur_time = str(time.time())
-    packet = '0'*(packet_size-len(cur_time))+cur_time
+    seq_num = str(i)
+    while(len(seq_num) < seq_num_max_len): #make sequence number constant size
+        seq_num = '0'+seq_num
+    packet = seq_num+'0'*(packet_size-len(cur_time)-seq_num_max_len)+cur_time
     packet = packet.encode('ascii')
     s_tcp.sendall(packet)
     s_udp.sendall(packet)
