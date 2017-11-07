@@ -23,7 +23,7 @@ for i in range(num_packets):
         seq_num = '0'+seq_num
     packet = seq_num+'0'*(packet_size-len(cur_time)-seq_num_max_len)+cur_time
     packet = packet.encode('ascii')
-    if not random.randint() % packet_loss_percentage == 0:
+    if not random.randint(0,100) < packet_loss_percentage == 0:
         s_tcp.sendall(packet)
         s_udp.sendall(packet)
 
