@@ -1,9 +1,11 @@
 import socket
 import time
+import random
 
 num_packets = 20
 packet_size = 2048
 seq_num_max_len = 8
+packet_loss_percentage = 5
 
 s_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -21,8 +23,9 @@ for i in range(num_packets):
         seq_num = '0'+seq_num
     packet = seq_num+'0'*(packet_size-len(cur_time)-seq_num_max_len)+cur_time
     packet = packet.encode('ascii')
-    s_tcp.sendall(packet)
-    s_udp.sendall(packet)
+    if not random.randint() % packet_loss_percentage == 0:
+        s_tcp.sendall(packet)
+        s_udp.sendall(packet)
 
 s_tcp.close()
 s_udp.close()
