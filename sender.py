@@ -19,11 +19,12 @@ s_udp.connect((receiver_ip, receiver_port_udp))
 for i in range(num_packets):
     cur_time = str(time.time())
     seq_num = str(i)
-    while(len(seq_num) < seq_num_max_len): #make sequence number constant size
+    while(len(seq_num) < seq_num_max_len): # make sequence number constant size
         seq_num = '0'+seq_num
     packet = seq_num+'0'*(packet_size-len(cur_time)-seq_num_max_len)+cur_time
     packet = packet.encode('ascii')
     if not (random.randint(0,100) < packet_loss_percentage):
+        time.sleep(0.1) # simulate delay
         s_tcp.sendall(packet)
         s_udp.sendall(packet)
 
