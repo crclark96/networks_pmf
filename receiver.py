@@ -33,6 +33,22 @@ def extract_data(input_list, seq_num, data):
             input_list.append(0)
         input_list.append(data)
     return input_list
+    
+def find_packet_loss(packet_list):
+    counter = 0
+    for i in range (len(packet_list)):
+        if packet_list[i] == 0:
+            counter += 1
+    return counter / len(packet_list)
+
+def find_throughput(packet_list):
+    while 0 in packet_list:
+        packet_list.remove(0)
+    maximum = 1/min(packet_list)
+    minimum = 1/max(packet_list)
+    average = 1 / (sum(packet_list) / len(packet_list))
+    return (maximum, minimum, average)
+        
 
 
 s_tcp.listen(1)
@@ -44,7 +60,7 @@ with conn:
         if not data:
             break
         tcp_sequence_num = int(data[0:8])
-        tcp_data_point = float(data[8:]) #- time.time()
+        tcp_data_point = float(data[8:]) - time.time()
         tcp_data_list = extract_data(tcp_data_list, tcp_sequence_num, tcp_data_point)
         
         #  print("tcp:",float(data), "my time:",time.time(), "diff:",time.time()-float(data))
@@ -53,15 +69,11 @@ with conn:
         if not data:
             break
         udp_sequence_num = int(data[0:8])
-        udp_data_point = float(data[8:]) #- time.time()
+        udp_data_point = float(data[8:]) - time.time()
         udp_data_list = extract_data(udp_data_list, udp_sequence_num, udp_data_point)
         #  print("udp:",float(data), "my time:",time.time(), "diff:",time.time()-float(data))
         
-
-print(tcp_data_list)
-print(udp_data_list)
-
-
+print("TCP pakcet loss: ", find_packet_loss(tcp_data_list)*100, "%")
     
 
 
