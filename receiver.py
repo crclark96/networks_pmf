@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov  2 13:08:50 2017
@@ -60,7 +61,7 @@ with conn:
         if not data:
             break
         tcp_sequence_num = int(data[0:8])
-        tcp_data_point = float(data[8:]) - time.time()
+        tcp_data_point = time.time() - float(data[8:])
         tcp_data_list = extract_data(tcp_data_list, tcp_sequence_num, tcp_data_point)
         
         #  print("tcp:",float(data), "my time:",time.time(), "diff:",time.time()-float(data))
@@ -69,12 +70,18 @@ with conn:
         if not data:
             break
         udp_sequence_num = int(data[0:8])
-        udp_data_point = float(data[8:]) - time.time()
+        udp_data_point = time.time() - float(data[8:])
         udp_data_list = extract_data(udp_data_list, udp_sequence_num, udp_data_point)
         #  print("udp:",float(data), "my time:",time.time(), "diff:",time.time()-float(data))
         
-print("TCP pakcet loss: ", find_packet_loss(tcp_data_list)*100, "%")
-    
+print("TCP packet loss: ", find_packet_loss(tcp_data_list)*100, "%")
+print("UDP packet loss: ", find_packet_loss(udp_data_list)*100, "%")
+print("TCP throughput: ")
+delay = find_throughput(tcp_data_list)
+print("max: ",delay[0], "min: ",delay[1],"avg: ",delay[2])
+print("UDP throughput: ")
+delay = find_throughput(udp_data_list)
+print("max: ",delay[0], "min: ",delay[1],"avg: ",delay[2])
 
 
 #s_udp.listen(1)
