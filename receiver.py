@@ -14,6 +14,7 @@ packet_size = 2048
 receiver_ip = '127.0.0.1'
 receiver_port_tcp = 7777
 receiver_port_udp = 7778
+controller_port = 7779
 
 s_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -88,6 +89,21 @@ def udp_receive():
     print("max: ",delay[0], "min: ",delay[1],"avg: ",delay[2])
 
 
-tcp_receive()
-print("finished tcp, starting udp")
-udp_receive()
+if __name__ == "__main__":
+    controller = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    controller.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    controller.bind((receiver_ip, controller_port))
+    controller.listen(1)
+
+    conn,addr = controller.accept()
+    with conn:
+        while True:
+            data = conn.recv(packet_size)
+            if not data:
+                break
+            if int(data) == 1:
+                print("tcp receive")
+                tcp_receive()
+            elif int(data) == 2:
+                print("udp receive")
+                udp_receive()

@@ -11,6 +11,9 @@ packet_loss_percentage = 15
 receiver_ip = '127.0.0.1'
 receiver_port_tcp = 7777
 receiver_port_udp = 7778
+sender_ip = '127.0.0.1'
+controller_port = 7780
+
 
 def tcp_send():
     s_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -44,6 +47,22 @@ def udp_send():
     s_udp.close()
 
 
-tcp_send()
-udp_send()
-print("we're in")
+if __name__ == "__main__":
+    controller = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    controller.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    controller.bind((sender_ip, controller_port))
+    controller.listen(1)
+
+    conn,addr = controller.accept()
+    with conn:
+        while True:
+            data = conn.recv(packet_size)
+            if not data:
+                break
+            if int(data) == 1:
+                print("tcp send")
+                tcp_send()
+            elif int(data) == 2:
+                print("udp send")
+                udp_send()
+
