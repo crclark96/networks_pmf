@@ -10,18 +10,18 @@ import socket
 import time
 
 packet_size = 2048
-tcp_data_list = []
-udp_data_list = []
-
-s_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 receiver_ip = '127.0.0.1'
 receiver_port_tcp = 7777
 receiver_port_udp = 7778
 
+s_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s_tcp.bind((receiver_ip, receiver_port_tcp))
+s_tcp.listen(1)
+
+s_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s_udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s_udp.bind((receiver_ip, receiver_port_udp))
 
 def extract_data(input_list, seq_num, data):
@@ -50,39 +50,44 @@ def find_throughput(packet_list):
     average = 1 / (sum(packet_list) / len(packet_list))
     return (maximum, minimum, average)
         
+def tcp_receive():
+    tcp_data_list = []
+    conn, addr = s_tcp.accept()
+    with conn:
+        print('connected by ', addr)
+        while True:
+            data = conn.recv(packet_size)
+            if not data:
+                break
+            tcp_sequence_num = int(data[0:8])
+            tcp_data_point = time.time() - float(data[8:])
+            tcp_data_list = extract_data(tcp_data_list, \
+                                         tcp_sequence_num, \
+                                         tcp_data_point)
+    print("TCP packet loss: ", find_packet_loss(tcp_data_list)*100, "%")
+    print("TCP throughput: ")
+    delay = find_throughput(tcp_data_list)
+    print("max: ",delay[0], "min: ",delay[1],"avg: ",delay[2])
 
 
-s_tcp.listen(1)
-conn, addr = s_tcp.accept()
-with conn:
-    print('connected by ', addr)
+
+def udp_receive():
+    udp_data_list = []
+    data = s_udp.recv(packet_size)
     while True:
-        data = conn.recv(packet_size)
-        if not data:
-            break
-        tcp_sequence_num = int(data[0:8])
-        tcp_data_point = time.time() - float(data[8:])
-        tcp_data_list = extract_data(tcp_data_list, tcp_sequence_num, tcp_data_point)
-        
-        #  print("tcp:",float(data), "my time:",time.time(), "diff:",time.time()-float(data))
-
-        data = s_udp.recv(packet_size)
         if not data:
             break
         udp_sequence_num = int(data[0:8])
         udp_data_point = time.time() - float(data[8:])
-        udp_data_list = extract_data(udp_data_list, udp_sequence_num, udp_data_point)
-        #  print("udp:",float(data), "my time:",time.time(), "diff:",time.time()-float(data))
-        
-print("TCP packet loss: ", find_packet_loss(tcp_data_list)*100, "%")
-print("UDP packet loss: ", find_packet_loss(udp_data_list)*100, "%")
-print("TCP throughput: ")
-delay = find_throughput(tcp_data_list)
-print("max: ",delay[0], "min: ",delay[1],"avg: ",delay[2])
-print("UDP throughput: ")
-delay = find_throughput(udp_data_list)
-print("max: ",delay[0], "min: ",delay[1],"avg: ",delay[2])
+        udp_data_list = extract_data(udp_data_list, \
+                                     udp_sequence_num, \
+                                     udp_data_point)
+    print("UDP packet loss: ", find_packet_loss(udp_data_list)*100, "%")
+    print("UDP throughput: ")
+    delay = find_throughput(udp_data_list)
+    print("max: ",delay[0], "min: ",delay[1],"avg: ",delay[2])
 
 
-#s_udp.listen(1)
-
+tcp_receive()
+print("finished tcp, starting udp")
+udp_receive()
