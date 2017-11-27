@@ -26,7 +26,7 @@ def tcp_send():
     # send packets
     for i in range(num_packets):
         cur_time = str(time.time())
-        seq_num = '0'*(max_seq_num_size - len(str(i))) + str(i)
+        seq_num = '0'*(seq_num_max_len - len(str(i))) + str(i)
         # construct packet from seq_num, total number of packets, time sent
         # (0 padded)
         packet = seq_num
@@ -51,7 +51,7 @@ def udp_send():
     # send packets
     for i in range(num_packets):
         cur_time = str(time.time())
-        seq_num = '0'*(max_seq_num_size - len(str(i))) + str(i)
+        seq_num = '0'*(seq_num_max_len - len(str(i))) + str(i)
         # construct packet from seq_num, total number of packets, time sent
         # (0 padded)
         packet = seq_num
